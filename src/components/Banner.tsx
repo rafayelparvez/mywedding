@@ -24,7 +24,10 @@ const Banner = () => {
       className="relative isolate overflow-hidden bg-[#190C24]"
     >
       {/* Sliding background images */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10"
+      >
         {backgrounds.map((src, index) => (
           <Image
             key={src}
@@ -50,7 +53,10 @@ const Banner = () => {
       <div className="mx-auto flex min-h-[480px] w-full max-w-5xl flex-col items-center justify-center px-5 py-16 text-center sm:min-h-[560px] sm:px-8 sm:py-24 lg:min-h-[620px] lg:py-28 xl:py-32">
         {/* Eyebrow */}
         <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-center text-[9px] font-semibold uppercase leading-relaxed tracking-[0.18em] text-white/90 backdrop-blur sm:px-4 sm:text-[10px] sm:tracking-[0.22em] lg:text-[11px]">
-          <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#FA4796]" />
+          <span
+            aria-hidden="true"
+            className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#FA4796]"
+          />
           Your Dream Wedding Starts Here
         </span>
 
