@@ -9,7 +9,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "MyWedding - Plan Your Wedding, Your Way",
+  title: "My Wedding - Plan Your Wedding, Your Way",
   description: "Wedding Planning & Vendor Marketplace",
 };
 
