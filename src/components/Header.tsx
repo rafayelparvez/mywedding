@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SpinnerIcon } from "@/components/auth/icons";
 import { signOut, useSession } from "@/lib/auth-client";
 import { ROLE_LABELS } from "@/lib/roles";
@@ -47,6 +47,13 @@ const Header = () => {
   const router = useRouter();
   const { data: session, isPending } = useSession();
 
+  useEffect(() => {
+    // Update route immediately after session changes
+    if (!isPending && session) {
+      router.push("/");
+    }
+  }, [isPending, router, session]);
+
   const displayName =
     session?.user.name?.trim() ||
     session?.user.email?.split("@")[0] ||
@@ -74,6 +81,29 @@ const Header = () => {
       setIsSigningOut(false);
     }
   };
+
+  // Close dropdown on escape key
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (isMenuOpen && target && !target.closest(".dropdown-trigger")) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-black/10 bg-white/95 shadow-sm backdrop-blur">
@@ -123,30 +153,67 @@ const Header = () => {
             />
           ) : session ? (
             <>
-              <div className="flex items-center gap-2.5 rounded-full border border-black/10 bg-white py-1 pl-1 pr-3 shadow-sm">
-                <UserAvatar
-                  image={session.user.image}
-                  initials={initials}
-                />
-                <span className="flex flex-col leading-tight">
-                  <span className="max-w-28 truncate text-sm font-semibold text-[#190C24]">
-                    {firstName}
-                  </span>
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#D81B7E]">
-                    {roleLabel}
-                  </span>
-                </span>
-              </div>
+              {/* Profile dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsMenuOpen((open) => !open)}
+                  aria-expanded={isMenuOpen}
+                  aria-label={isMenuOpen ? "Close profile menu" : "Open profile menu"}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white py-1 pl-1 pr-3 shadow-sm hover:border-[#D81B7E]/30 hover:bg-[#D81B7E]/[0.03] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]"
+                >
+                  <UserAvatar
+                    image={session.user.image}
+                    initials={initials}
+                    className="h-8 w-8"
+                  />
+                </button>
 
-              <button
-                type="button"
-                onClick={handleSignOut}
-                disabled={isSigningOut}
-                className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/10 px-4 py-2 text-sm font-medium text-[#190C24]/70 transition hover:border-[#D81B7E]/30 hover:text-[#D81B7E] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSigningOut ? <SpinnerIcon className="h-3.5 w-3.5" /> : null}
-                Sign out
-              </button>
+                {isMenuOpen && (
+                  <div
+                    className="absolute right-0 mt-2 w-64 rounded-2xl bg-white shadow-lg border border-black/10 z-50 min-w"
+                  >
+                    <div className="p-4 text-sm text-[#190C24]">
+                      <div className="flex items-center gap-3 mb-4">
+                        <UserAvatar
+                          image={session.user.image}
+                          initials={initials}
+                          className="h-10 w-10 rounded-full"
+                        />
+                        <span>
+                          <span className="font-semibold text-[13px] text-[#190C24]">
+                            {firstName}
+                          </span>
+                          <span className="text-[10px] text-[#190C24]/40 font-medium uppercase tracking-[0.1em]">
+                            {roleLabel}
+                          </span>
+                        </span>
+                      </div>
+
+                      <nav className="space-y-1">
+                        <Link
+                          href="/dashboard"
+                          className="block rounded-md px-3 py-2.5 text-[#190C24] hover:bg-[#F9FAFB] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]">
+                          Dashboard
+                        </Link>
+                        <Link
+                          href="/profile"
+                          className="block rounded-md px-3 py-2.5 text-[#190C24] hover:bg-[#F9FAFB] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]">
+                          Profile Settings
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          disabled={isSigningOut}
+                          className="block w-full rounded-md px-3 py-2.5 text-sm font-medium text-[#D81B7E] hover:bg-[#FEF3F5] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]">
+                          {isSigningOut ? <SpinnerIcon className="h-4 w-4 mr-2" /> : null}
+                          Sign out
+                        </button>
+                      </nav>
+                    </div>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <>
@@ -257,9 +324,7 @@ const Header = () => {
                   disabled={isSigningOut}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-black/10 px-4 py-2.5 text-sm font-medium text-[#190C24]/70 transition hover:border-[#D81B7E]/30 hover:text-[#D81B7E] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSigningOut ? (
-                    <SpinnerIcon className="h-4 w-4" />
-                  ) : null}
+                  {isSigningOut ? <SpinnerIcon className="h-4 w-4" /> : null}
                   Sign out
                 </button>
               </div>
