@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
+import { jwt } from "better-auth/plugins/jwt";
 import { DEFAULT_USER_ROLE, isRegistrationRole } from "@/lib/roles";
 
 const client = new MongoClient(process.env.BETTER_AUTH_DB_URI as string);
@@ -14,6 +15,13 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
     maxPasswordLength: 128,
+  },
+  // Session cookie strategy: "jwt" makes session cookies contain signed JWTs
+  // that can be verified in Express/Next.js API routes using BETTER_AUTH_SECRET.
+  session: {
+    cookieCache: {
+      strategy: "jwt",
+    },
   },
   ...(googleClientId && googleClientSecret
     ? {
@@ -59,6 +67,10 @@ export const auth = betterAuth({
       },
     },
   },
+  // JWT plugin for Express API authentication
+  // When strategy is "jwt", session cookies contain signed JWTs
+  // verified with BETTER_AUTH_SECRET. Provides signJWT/verifyJWT endpoints.
+  plugins: [jwt()],
   database: mongodbAdapter(db, {
     client,
   }),
