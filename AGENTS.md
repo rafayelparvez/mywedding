@@ -10,31 +10,36 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # mywedding
 
-Wedding planning app: Next.js 16 App Router, React 19, Tailwind v4, better-auth, MongoDB. Early-stage scaffold — `src/app/page.tsx` and `src/components/Header.tsx` are placeholders.
+Wedding planning marketplace: Next.js 16 App Router, React 19, Tailwind v4, better-auth, MongoDB. Homepage (`Banner`), `Header`, `Footer`, and email/password auth (`/login`, `/register`) are built. `README.md` is stock create-next-app boilerplate — trust this file and the config instead.
 
 ## Commands
 
 - `npm run dev` / `npm run build` / `npm run start`
-- `npm run lint` — bare `eslint` across the repo (flat config: `eslint.config.mjs`)
-- No test runner and no typecheck script. Run `npx tsc --noEmit`.
-- No CI or pre-commit hooks; verify changed code with `npx tsc --noEmit`, `npm run lint`, and `npm run build` when routes/server code changed.
+- `npm run lint` — bare `eslint` (flat config: `eslint.config.mjs`); `next lint` was removed in Next 16.
+- No test runner and no `typecheck` script: run `npx tsc --noEmit`.
+- No CI or pre-commit hooks. Before finishing: `npx tsc --noEmit`, `npm run lint`, and `npm run build` when routes/server code changed.
 
-## Framework
+## Framework (Next.js 16)
 
-- Read `node_modules/next/dist/docs/` before using Next.js APIs; this major version differs from most training data.
+- Read `node_modules/next/dist/docs/` before using Next.js APIs; this major differs from most training data (upgrade notes: `01-app/02-guides/upgrading/version-16.md`).
+- Request APIs are async: `params`/`searchParams` are `Promise`s and must be awaited.
+- `middleware.ts` is deprecated in favor of `proxy.ts` (exported function `proxy`).
+- Turbopack is the default. Tailwind is wired through `turbopack.rules` in `next.config.ts`, not PostCSS.
 - Never edit inside `<!-- BEGIN:nextjs-* -->` blocks in this file — `next dev` rewrites them.
 
 ## Setup
 
-- `.env` is gitignored. Required keys: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
-- A local MongoDB must be running: `src/lib/auth.ts` hard-codes `mongodb://localhost:27017/database` and DB name `mywedding` (not env-driven).
-- Google OAuth redirect URI is `http://localhost:3000/api/auth/callback/google` (catch-all route at `src/app/api/auth/[...all]/route.ts`).
-- `BETTER_AUTH_URL` lacks the `NEXT_PUBLIC_` prefix, so it is `undefined` in browser code even though `src/lib/auth-client.ts` reads it there.
+- `.env` is gitignored. Required keys: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `BETTER_AUTH_DB_URI`. `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` are optional; Google sign-in is disabled unless both are set.
+- MongoDB must be reachable; `src/lib/auth.ts` reads the URI from `BETTER_AUTH_DB_URI` and hard-codes the DB name `mywedding`.
+- Google OAuth redirect URI is `http://localhost:3000/api/auth/callback/google`; the handler is the catch-all route at `src/app/api/auth/[...all]/route.ts`.
 
 ## Auth
 
-- Server config: `src/lib/auth.ts` (email/password + Google). Client helpers: `src/lib/auth-client.ts`; import `authClient`/`signIn`/`signUp`/`useSession` from there.
-- `auth-client.ts` calls `createAuthClient()` twice: the exported `signIn`/`signUp`/`useSession` come from the second, unconfigured call, so `baseURL` is ignored for them. Update both calls or consolidate.
+- Server config: `src/lib/auth.ts` (email/password + optional Google). Client helpers: `src/lib/auth-client.ts`; import `authClient`/`signIn`/`signUp`/`signOut`/`useSession` from there.
+- `src/lib/roles.ts` is the shared role source: `user`, `vendor`, `admin`. Public registration only offers `user`/`vendor`; `databaseHooks.user.create.before` forces any other submitted role to `user`, so admins must be promoted directly in MongoDB.
+- `role` is a Better Auth `user.additionalFields` entry; `inferAdditionalFields<typeof auth>()` in `auth-client.ts` exposes it on `useSession().data.user.role`.
+- Registration stores the uploaded avatar as a resized JPEG data URL in Better Auth's built-in `user.image` (`src/lib/avatar.ts`); there is no file-storage service.
+- `(auth)` is a route group: `src/app/(auth)/login/page.tsx` is a server wrapper that passes `googleEnabled` to `LoginForm.tsx`; `register/page.tsx` is the client form.
 
 ## Dependencies
 
@@ -42,6 +47,7 @@ Wedding planning app: Next.js 16 App Router, React 19, Tailwind v4, better-auth,
 
 ## Styling
 
-- Tailwind v4: no `tailwind.config.*` and no PostCSS config. Entry is `@import "tailwindcss"` in `src/app/globals.css`, processed by `@tailwindcss/turbopack` through `turbopack.rules` in `next.config.ts`.
+- Tailwind v4: no `tailwind.config.*` and no PostCSS config. Entry is `@import "tailwindcss"` in `src/app/globals.css`, processed by `@tailwindcss/turbopack` via `turbopack.rules` in `next.config.ts`.
+- No theme tokens: brand colors are hard-coded arbitrary values across components (`#D81B7E`/`#FA4796` magenta, `#190C24`/`#120A18` dark). Follow that pattern unless asked to introduce tokens.
 - Path alias `@/*` maps to `src/*`.
-- Root layout applies Manrope globally and renders `Header` on every page.
+- Root layout applies Manrope globally and renders `Header` and `Footer` on every page.
