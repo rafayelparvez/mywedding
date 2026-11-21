@@ -75,8 +75,12 @@ const RegisterPage = () => {
 
     if (!password) {
       next.password = "Create a password.";
-    } else if (password.length < 8) {
-      next.password = "Use at least 8 characters.";
+    } else if (password.length < 6) {
+      next.password = "Use at least 6 characters.";
+    } else if (!/[A-Z]/.test(password)) {
+      next.password = "Password must contain at least one uppercase letter.";
+    } else if (!/[a-z]/.test(password)) {
+      next.password = "Password must contain at least one lowercase letter.";
     }
 
     if (!confirmPassword) {
@@ -246,7 +250,7 @@ const RegisterPage = () => {
           }}
           icon={<LockIcon />}
           error={errors.password}
-          hint="At least 8 characters."
+          hint="At least 6 characters, one uppercase and one lowercase letter"
           disabled={isSubmitting}
         />
 

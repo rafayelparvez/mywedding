@@ -13,7 +13,7 @@ const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
-    minPasswordLength: 8,
+    minPasswordLength: 6,
     maxPasswordLength: 128,
   },
   // Session cookie strategy: "jwt" makes session cookies contain signed JWTs
