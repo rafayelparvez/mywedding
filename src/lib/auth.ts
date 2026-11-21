@@ -31,20 +31,28 @@ export const auth = betterAuth({
         type: "string",
         required: false,
         defaultValue: DEFAULT_USER_ROLE,
+        // Never accepted from request bodies, so `/update-user` cannot
+        // escalate an account. Only the create hook below can set it.
+        input: false,
+      },
+      requestedRole: {
+        type: "string",
+        required: false,
         input: true,
+        returned: false,
       },
     },
   },
   databaseHooks: {
     user: {
       create: {
-        // Only `user` and `vendor` can be self-assigned. Admins are promoted
-        // directly in the database and can never be created by the public form.
+        // The public form sends `requestedRole`; only `user` and `vendor` are
+        // honoured. Admins must be promoted directly in MongoDB.
         before: async (user) => ({
           data: {
             ...user,
-            role: isRegistrationRole(user.role)
-              ? user.role
+            role: isRegistrationRole(user.requestedRole)
+              ? user.requestedRole
               : DEFAULT_USER_ROLE,
           },
         }),

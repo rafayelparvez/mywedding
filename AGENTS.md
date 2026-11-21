@@ -36,8 +36,8 @@ Wedding planning marketplace: Next.js 16 App Router, React 19, Tailwind v4, bett
 ## Auth
 
 - Server config: `src/lib/auth.ts` (email/password + optional Google). Client helpers: `src/lib/auth-client.ts`; import `authClient`/`signIn`/`signUp`/`signOut`/`useSession` from there.
-- `src/lib/roles.ts` is the shared role source: `user`, `vendor`, `admin`. Public registration only offers `user`/`vendor`; `databaseHooks.user.create.before` forces any other submitted role to `user`, so admins must be promoted directly in MongoDB.
-- `role` is a Better Auth `user.additionalFields` entry; `inferAdditionalFields<typeof auth>()` in `auth-client.ts` exposes it on `useSession().data.user.role`.
+- `src/lib/roles.ts` is the shared role source: `user`, `vendor`, `admin`. `role` is a Better Auth `user.additionalFields` entry with `input: false`; the public form sends `requestedRole`, and `databaseHooks.user.create.before` maps it to `user`/`vendor` (anything else becomes `user`). Admins must be promoted directly in MongoDB, and `/update-user` cannot change roles.
+- `inferAdditionalFields<typeof auth>()` in `auth-client.ts` exposes `role` on `useSession().data.user.role`.
 - Registration stores the uploaded avatar as a resized JPEG data URL in Better Auth's built-in `user.image` (`src/lib/avatar.ts`); there is no file-storage service.
 - `(auth)` is a route group: `src/app/(auth)/login/page.tsx` is a server wrapper that passes `googleEnabled` to `LoginForm.tsx`; `register/page.tsx` is the client form.
 

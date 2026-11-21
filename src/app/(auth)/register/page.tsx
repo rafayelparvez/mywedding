@@ -123,7 +123,7 @@ const RegisterPage = () => {
         email: email.trim().toLowerCase(),
         password,
         image: avatar || undefined,
-        role,
+        requestedRole: role,
         callbackURL: "/",
       });
 

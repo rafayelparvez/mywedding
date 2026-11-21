@@ -10,7 +10,7 @@ export type RegistrationRole = (typeof REGISTRATION_ROLES)[number];
 export const DEFAULT_USER_ROLE: UserRole = "user";
 
 export const ROLE_LABELS: Record<UserRole, string> = {
-  user: "Couple",
+  user: "User",
   vendor: "Vendor",
   admin: "Admin",
 };

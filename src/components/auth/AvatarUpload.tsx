@@ -98,7 +98,7 @@ const AvatarUpload = ({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         className="sr-only"
         disabled={disabled}
         onChange={(event) => {

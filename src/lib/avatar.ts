@@ -1,13 +1,14 @@
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 const AVATAR_SIZE = 512;
+const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 /**
  * Reads an image file in the browser, crops it to a square and resizes it so
  * the resulting data URL can be stored on the Better Auth user record.
  */
 export async function createAvatarDataUrl(file: File): Promise<string> {
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Please choose an image file.");
+  if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+    throw new Error("Use a JPG, PNG or WebP image.");
   }
 
   if (file.size > MAX_AVATAR_BYTES) {
