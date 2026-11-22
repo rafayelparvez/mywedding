@@ -196,6 +196,25 @@ const Header = () => {
                           className="block rounded-md px-3 py-2.5 text-[#190C24] hover:bg-[#F9FAFB] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]">
                           Dashboard
                         </Link>
+                        {session?.user.role === "admin" && (
+                          <>
+                            <Link
+                              href="/dashboard/users"
+                              className="block rounded-md px-3 py-2.5 text-[#190C24] hover:bg-[#F9FAFB] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]">
+                              Manage Users
+                            </Link>
+                            <Link
+                              href="/dashboard/services"
+                              className="block rounded-md px-3 py-2.5 text-[#190C24] hover:bg-[#F9FAFB] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]">
+                              Manage Services
+                            </Link>
+                            <Link
+                              href="/dashboard/transactions"
+                              className="block rounded-md px-3 py-2.5 text-[#190C24] hover:bg-[#F9FAFB] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]">
+                              Transactions
+                            </Link>
+                          </>
+                        )}
                         <Link
                           href="/profile"
                           className="block rounded-md px-3 py-2.5 text-[#190C24] hover:bg-[#F9FAFB] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]">

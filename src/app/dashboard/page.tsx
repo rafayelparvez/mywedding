@@ -3,15 +3,66 @@
 import Footer from "@/components/Footer";
 import Image from "next/image";
 import Link from "next/link";
+useClient;
+
+import { useEffect, useState } from "react";
+
+// Admin dashboard page with metrics and navigation
+interface DashboardStats {
+  totalUsers: number;
+  totalVendors: number;
+  totalCustomers: number;
+  totalServices: number;
+  pendingServices: number;
+  totalTransactions: number;
+}
+
+interface DashboardNavItem {
+  label: string;
+  href: string;
+  icon?: string;
+}
 
 export default function DashboardPage() {
-  // Sample statistics - in real app, fetch from /api/dashboard/stats
-  const stats = {
-    total: 5,
-    pending: 2,
-    accepted: 2,
-    rejected: 1,
-  };
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch dashboard stats from API
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const response = await fetch("/api/admin/stats", {
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          throw new Error("Failed to fetch dashboard stats");
+        }
+        const data = await response.json();
+        setStats(data.stats);
+      } catch (err) {
+        console.error("Error fetching dashboard stats:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadStats();
+  }, []);
+
+  if (isLoading && stats === null) {
+    return (
+      <div className="min-h-screen bg-white p-8">
+        <p className="text-lg text-[#190C24]">Loading dashboard stats...</p>
+      </div>
+    );
+  }
+
+  const navLinks: DashboardNavItem[] = [
+    { label: "Overview", href: "/dashboard" },
+    { label: "Manage Users", href: "/dashboard/users" },
+    { label: "Manage Services", href: "/dashboard/services" },
+    { label: "Transactions", href: "/dashboard/transactions" },
+  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -41,97 +92,109 @@ export default function DashboardPage() {
 
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-[#190C24]">
-              User
+              Admin
             </span>
-
-            <button
-              onClick={() => window.alert("Sign out clicked")}
-              className="ml-4 text-sm text-[#D81B7E] hover:underline"
-            >
-              Sign out
-            </button>
           </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         {/* Overview Statistics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {/* Total Booking Requests */}
-          <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
-            <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">
-              Total Booking Requests
-            </p>
-            <p className="text-3xl font-bold text-[#190C24]">{stats.total}</p>
-          </div>
+        {stats ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {/* Total Registered Users */}
+            <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">
+                Total Registered Users
+              </p>
+              <p className="text-3xl font-bold text-[#190C24]">{stats.totalUsers}</p>
+            </div>
 
-          {/* Pending Bookings */}
-          <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
-            <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">
-              Pending Bookings
-            </p>
-            <p className="text-3xl font-bold text-[#FA4796]">{stats.pending}</p>
-          </div>
+            {/* Total Vendors */}
+            <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">
+                Total Vendors
+              </p>
+              <p className="text-3xl font-bold text-[#FA4796]">{stats.totalVendors}</p>
+            </div>
 
-          {/* Accepted Bookings */}
-          <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
-            <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">
-              Accepted Bookings
-            </p>
-            <p className="text-3xl font-bold text-[#10B981]">{stats.accepted}</p>
-          </div>
+            {/* Total Customers */}
+            <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">
+                Total Customers
+              </p>
+              <p className="text-3xl font-bold text-[#10B981]">{stats.totalCustomers}</p>
+            </div>
 
-          {/* Rejected Bookings */}
-          <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
-            <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">
-              Rejected Bookings
-            </p>
-            <p className="text-3xl font-bold text-[#F87171]">{stats.rejected}</p>
-          </div>
-        </div>
+            {/* Total Services */}
+            <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">
+                Total Services
+              </p>
+              <p className="text-3xl font-bold text-[#10B981]">{stats.totalServices}</p>
+            </div>
 
-        {/* Profile Settings section */}
-        <div>
+            {/* Pending Services */}
+            <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">
+                Pending Services
+              </p>
+              <p className="text-3xl font-bold text-[#FA4796]">{stats.pendingServices}</p>
+            </div>
+
+            {/* Total Transactions */}
+            <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">
+                Total Transactions
+              </p>
+              <p className="text-3xl font-bold text-[#F87171]">{stats.totalTransactions}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">Total Registered Users</p>
+              <p className="text-3xl font-bold text-[#190C24]">Loading...</p>
+            </div>
+            <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">Total Vendors</p>
+              <p className="text-3xl font-bold text-[#FA4796]">Loading...</p>
+            </div>
+            <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">Total Customers</p>
+              <p className="text-3xl font-bold text-[#10B981]">Loading...</p>
+            </div>
+            <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">Total Services</p>
+              <p className="text-3xl font-bold text-[#10B981]">Loading...</p>
+            </div>
+            <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">Pending Services</p>
+              <p className="text-3xl font-bold text-[#FA4796]">Loading...</p>
+            </div>
+            <div className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">Total Transactions</p>
+              <p className="text-3xl font-bold text-[#F87171]">Loading...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Admin Navigation */}
+        <div className="mt-8">
           <h3 className="text-xl font-semibold text-[#190C24] mb-4">
-            Profile Settings
+            Admin Navigation
           </h3>
-          <p className="text-[#190C24]/60 text-sm">
-            Manage your profile information, upload avatar, and update account settings.
-          </p>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div>
-              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">
-                Name
-              </p>
-              <p className="font-medium text-[#190C24]">John Doe</p>
-            </div>
-            <div>
-              <p className="text-xs text-[#190C24]/60 uppercase tracking-wider">
-                Email
-              </p>
-              <p className="font-medium text-[#190C24]">john@example.com</p>
-            </div>
-          </div>
-          <button
-            onClick={() => window.alert("Profile settings clicked")}
-            className="mt-4 w-full inline-flex items-center justify-center rounded-full bg-[#D81B7E]/20 px-5 py-3 text-sm font-medium text-[#D81B7E] hover:bg-[#D81B7E]/30 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]"
-          >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-5 mr-2"
-            >
-              <circle cx="9" cy="21" r="1" />
-              <circle cx="20" cy="21" r="1" />
-              <path d="M1 1l4 4L23 1" />
-            </svg>
-            Update Profile
-          </button>
+          <nav className="space-y-3">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="rounded-md px-4 py-2.5 text-[#190C24] bg-[#F9FAFB] hover:bg-[#EFF6FF] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       </div>
     </div>

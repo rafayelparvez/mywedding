@@ -149,7 +149,8 @@ export default function VendorAddServicePage() {
               onChange={handleDescriptionChange}
               className="w-full px-4 py-3 rounded-xl bg-white border border-black/10 placeholder-[#190C24]/60 focus:outline-none focus:ring-2 focus:ring-[#D81B7E] focus:border-[#D81B7E]"
               required
-            /></textarea>
+            >
+            </textarea>
           </div>
 
           <button
