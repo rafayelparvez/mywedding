@@ -30,19 +30,10 @@ export default function VendorBookingRequestsPage() {
     },
   ];
 
-  function getStatusClass(status: string) {
-    if (status === "pending") return "bg-yellow-100 text-yellow-800";
-    return "bg-green-100 text-green-800";
-  }
-
-  function getStatusText(status: string) {
-    if (status === "pending") return "Pending";
-    return "Accepted";
-  }
-
   return (
     <div className="min-h-screen bg-white">
       {/* Topbar */}
+
       <header
         className="border-b border-black/10 bg-white sticky top-0 z-10 shadow-sm"
       >
@@ -78,7 +69,8 @@ export default function VendorBookingRequestsPage() {
               Sign out
             </button>
           </div>
-        </header>
+        </div>
+      </header>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <h2 className="text-2xl font-semibold text-[#190C24] mb-6">
@@ -97,15 +89,16 @@ export default function VendorBookingRequestsPage() {
         {pendingBookings.length > 0 ? (
           <div className="space-y-4">
             {pendingBookings.map((booking) => {
-              const statusClass = getStatusClass("pending");
-              const statusText = getStatusText("pending");
               const formattedDate = booking.createdAt.toLocaleDateString(
                 undefined,
                 { month: "short", day: "numeric" }
               );
 
               return (
-                <div key={booking.id} className="p-4 rounded-xl bg-white shadow-sm border border-black/10">
+                <div
+                  key={booking.id}
+                  className="p-4 rounded-xl bg-white shadow-sm border border-black/10"
+                >
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0">
                       <div
@@ -119,48 +112,46 @@ export default function VendorBookingRequestsPage() {
                         >
                           <path d="M12 5v14M5 12h14" />
                         </svg>
-                        </div>
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-[#190C24]">
-                            {booking.serviceTitle}
-                          </p>
-                          <p className="text-xs text-[#190C24]/60">
-                            {formattedDate}
-                          </p>
-                          <p className="text-xs text-[#190C24]/60">
-                            from {booking.userName}
-                          </p>
-                        </div>
-
-                        <div className="flex-1">
-                          <p className="text-xs text-[#190C24]/60">{booking.message}</p>
-                        </div>
-
-                        <div className="flex-shrink-0">
-                          <button
-                            className="px-3 py-1 rounded text-xs font-medium text-[#FA4796] hover:underline"
-                          >
-                            Accept
-                          </button>
-                          <button
-                            className="px-3 py-1 rounded text-xs font-medium text-[#FA4796] hover:underline ml-2"
-                          >
-                            Reject
-                          </button>
-                        </div>
                       </div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-[#190C24]">
+                        {booking.serviceTitle}
+                      </p>
+                      <p className="text-xs text-[#190C24]/60">
+                        {formattedDate}
+                      </p>
+                      <p className="text-xs text-[#190C24]/60">
+                        from {booking.userName}
+                      </p>
+                    </div>
+
+                    <div className="flex-1">
+                      <p className="text-xs text-[#190C24]/60">{booking.message}</p>
+                    </div>
+
+                    <div className="flex-shrink-0">
+                      <button
+                        className="px-3 py-1 rounded text-xs font-medium text-[#FA4796] hover:underline"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        className="px-3 py-1 rounded text-xs font-medium text-[#FA4796] hover:underline ml-2"
+                      >
+                        Reject
+                      </button>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-[#190C24]/60 text-sm">
-              No pending booking requests
-            </p>
-          )}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-[#190C24]/60 text-sm">
+            No pending booking requests
+          </p>
+        )}
       </div>
     </div>
   );
