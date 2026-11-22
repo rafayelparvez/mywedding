@@ -13,6 +13,9 @@ export default function VendorAddServicePage() {
     category: "venue",
     price: "",
     description: "",
+    location: "",
+    vendorId: "",
+    vendorName: "",
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +36,10 @@ export default function VendorAddServicePage() {
 
   function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setFormData({ ...formData, title: e.target.value });
+  }
+
+  function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setFormData({ ...formData, location: e.target.value });
   }
 
   function handleCategoryChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -99,6 +106,7 @@ export default function VendorAddServicePage() {
       form.append("category", category);
       form.append("description", description);
       form.append("price", price);
+      form.append("location", formData.location);
 
       // Append each selected image as a string data URL
       selectedImages.forEach((img) => {
@@ -129,6 +137,9 @@ export default function VendorAddServicePage() {
         category: "venue",
         price: "",
         description: "",
+        location: "",
+        vendorId: "",
+        vendorName: "",
       });
       setSelectedImages([]);
 
@@ -250,6 +261,20 @@ export default function VendorAddServicePage() {
 
           <div>
             <label className="block text-sm text-[#190C24] mb-2">
+              Location
+            </label>
+            <input
+              name="location"
+              type="text"
+              value={formData.location}
+              onChange={handleLocationChange}
+              className="w-full px-4 py-3 rounded-xl bg-white border border-black/10 placeholder-[#190C24]/60 focus:outline-none focus:ring-2 focus:ring-[#D81B7E]"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-[#190C24] mb-2">
               Description
             </label>
             <textarea
@@ -316,7 +341,6 @@ export default function VendorAddServicePage() {
               <button
                 type="button"
                 className="w-full px-4 py-3 rounded-xl bg-[#D81B7E]/20 text-sm font-medium text-[#D81B7E] hover:bg-[#D81B7E]/30 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]"
-                type="button"
               >
                 Upload Service Images
               </button>
@@ -342,7 +366,7 @@ export default function VendorAddServicePage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-6 py-3 rounded-xl bg-[#D81B7E]/20 text-sm font-medium text-[#D81B7E] hover:bg-[#D81B7E]/30 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-6 py-3 rounded-xl bg-[#D81B7E]/20 text-sm font-medium text-[#D81B7E] hover:bg-[#D81B7E]/30 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E] disabled:cursor-not-allowed"
           >
             {loading ? "Submitting..." : "Add Service"}
           </button>

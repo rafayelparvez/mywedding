@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     const price = data.get("price") as string;
     const images = data.getAll("images") as string[];
     const vendorId = data.get("vendorId") as string;
-    const vendorName = data.get("vendorName") as string;
+    const vendorName = data.get("vendorName") as string | undefined;
 
     // Validate required fields
     if (!title || !category || !description || !price || !vendorId) {
@@ -55,15 +55,15 @@ export async function POST(request: Request) {
     // Create the service with subscription limit enforcement and pending approval
     const result = await createService(
       {
-        title,
-        category,
-        description,
-        price,
-        image,
-        vendorId,
-        vendorName: vendorName || undefined,
+        title: title || "",
+        category: category || "venue",
+        description: description || "",
+        price: price || "",
+        image: image || "",
+        vendorId: vendorId || "",
+        vendorName: vendorName || "",
       },
-      vendorId
+      vendorId || ""
     );
 
     if (!result.success) {

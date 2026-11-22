@@ -255,8 +255,8 @@ export async function createService(
     approved: false, // New services start as Pending approval
     active: false, // Inactive until approved
     createdAt: new Date(),
-    vendorId,
-    vendorName,
+    vendorId: service.vendorId,
+    vendorName: service.vendorName,
   };
 
   await collection.insertOne(newService);

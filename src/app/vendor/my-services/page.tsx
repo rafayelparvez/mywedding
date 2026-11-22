@@ -3,43 +3,55 @@
 import Footer from "@/components/Footer";
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export default function VendorMyServicesPage() {
-  // In real app, fetch from /api/vendor/services
-  const services = [
-    {
-      id: "s1",
-      title: "Elegant Garden Venue",
-      category: "venue",
-      price: "$5,500",
-      image: "/images/placeholder-venue.jpg",
-      status: "active",
-    },
-    {
-      id: "s2",
-      title: "Classic Photography",
-      category: "photography",
-      price: "$2,800",
-      image: "/images/placeholder-photo.jpg",
-      status: "active",
-    },
-    {
-      id: "s3",
-      title: "Gourmet Catering",
-      category: "catering",
-      price: "$8,200",
-      image: "/images/placeholder-catering.jpg",
-      status: "pending",
-    },
-    {
-      id: "s4",
-      title: "Seasonal Florist",
-      category: "florist",
-      price: "$1,800",
-      image: "/images/placeholder-florist.jpg",
-      status: "active",
-    },
-  ];
+  const [services, setServices] = useState<Array<{
+    id: string;
+    title: string;
+    category: string;
+    price: string;
+    image: string;
+    status: "active" | "pending" | "inactive";
+  }>>([]);
+
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch services from API on mount
+  useEffect(() => {
+    async function fetchServices() {
+      try {
+        const response = await fetch("/api/vendor/services?vendorId=vendor_123");
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || "Failed to fetch services");
+        }
+
+        const result = await response.json();
+        // Transform API response to component format
+        // Services from API have approved/active fields, we map to status
+        const fetchedServices = result.services?.map((s: any) => ({
+          id: s.id,
+          title: s.title,
+          category: s.category,
+          price: s.price,
+          image: s.image,
+          // Map approved/active to status
+          status: (!s.approved ? "inactive" : !s.active ? "pending" : "active"),
+        })) || [];
+
+        setServices(fetchedServices);
+        setLoading(false);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch services");
+        setLoading(false);
+      }
+    }
+
+    fetchServices();
+  }, []);
 
   function getStatusClass(status: string) {
     if (status === "active") return "bg-green-100 text-green-800";
@@ -99,6 +111,20 @@ export default function VendorMyServicesPage() {
           My Services
         </h2>
 
+        {error && (
+          <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800">
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
+
+        {loading && services.length === 0 && (
+          <div className="grid grid-cols-1 gap-6 py-12">
+            <div className="col-span-2 rounded-2xl border border-black/10 bg-white/95 backdrop-blur p-8">
+              <p className="text-center text-[#190C24]/60">Loading services...</p>
+            </div>
+          </div>
+        )}
+
         {/* Services table */}
         <div className="overflow-x-auto">
           <div className="grid grid-cols-6 gap-4">
@@ -111,65 +137,33 @@ export default function VendorMyServicesPage() {
               </div>
             </div>
 
-            {/* Service 1 */}
-            <div className="border-b border-black/10 py-4 flex">
-              <div className="flex-1">{services[0].title}</div>
-              <div className="w-12 text-right">${services[0].price}</div>
-              <div className="w-12 text-center">
-                <span className={getStatusClass(services[0].status)}>
-                  {getStatusText(services[0].status)}
-                </span>
+            {services.length === 0 && !loading && (
+              <div className="border-b border-black/10 py-4 flex">
+                <div className="flex-1">No services found</div>
+                <div className="w-12 text-right"></div>
+                <div className="w-12 text-center"></div>
+                <div className="w-12 text-center"></div>
               </div>
-              <div className="w-12 text-center">
-                <button className="text-xs text-[#D81B7E] hover:underline">Edit</button>
-                <button className="text-xs text-[#FA4796] hover:underline">Delete</button>
-              </div>
-            </div>
+            )}
 
-            {/* Service 2 */}
-            <div className="border-b border-black/10 py-4 flex">
-              <div className="flex-1">{services[1].title}</div>
-              <div className="w-12 text-right">${services[1].price}</div>
-              <div className="w-12 text-center">
-                <span className={getStatusClass(services[1].status)}>
-                  {getStatusText(services[1].status)}
-                </span>
+            {services.map((service) => (
+              <div
+                key={service.id}
+                className="border-b border-black/10 py-4 flex"
+              >
+                <div className="flex-1">{service.title}</div>
+                <div className="w-12 text-right">${service.price}</div>
+                <div className="w-12 text-center">
+                  <span className={getStatusClass(service.status)}>
+                    {getStatusText(service.status)}
+                  </span>
+                </div>
+                <div className="w-12 text-center">
+                  <button className="text-xs text-[#D81B7E] hover:underline">Edit</button>
+                  <button className="text-xs text-[#FA4796] hover:underline">Delete</button>
+                </div>
               </div>
-              <div className="w-12 text-center">
-                <button className="text-xs text-[#D81B7E] hover:underline">Edit</button>
-                <button className="text-xs text-[#FA4796] hover:underline">Delete</button>
-              </div>
-            </div>
-
-            {/* Service 3 */}
-            <div className="border-b border-black/10 py-4 flex">
-              <div className="flex-1">{services[2].title}</div>
-              <div className="w-12 text-right">${services[2].price}</div>
-              <div className="w-12 text-center">
-                <span className={getStatusClass(services[2].status)}>
-                  {getStatusText(services[2].status)}
-                </span>
-              </div>
-              <div className="w-12 text-center">
-                <button className="text-xs text-[#D81B7E] hover:underline">Edit</button>
-                <button className="text-xs text-[#FA4796] hover:underline">Delete</button>
-              </div>
-            </div>
-
-            {/* Service 4 */}
-            <div className="border-b border-black/10 py-4 flex">
-              <div className="flex-1">{services[3].title}</div>
-              <div className="w-12 text-right">${services[3].price}</div>
-              <div className="w-12 text-center">
-                <span className={getStatusClass(services[3].status)}>
-                  {getStatusText(services[3].status)}
-                </span>
-              </div>
-              <div className="w-12 text-center">
-                <button className="text-xs text-[#D81B7E] hover:underline">Edit</button>
-                <button className="text-xs text-[#FA4796] hover:underline">Delete</button>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
