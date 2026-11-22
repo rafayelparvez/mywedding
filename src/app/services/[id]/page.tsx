@@ -6,6 +6,7 @@ import { useSession } from "@/lib/auth-client";
 import { Service } from "@/lib/services";
 import { ROLE_LABELS } from "@/lib/roles";
 import { useRouter } from "next/navigation";
+import { useRef, useCallback } from "react";
 
 export default function ServiceDetailPage() {
   const { id } = useParams() as { id: string };
@@ -29,6 +30,16 @@ export default function ServiceDetailPage() {
   const [service, setService] = useState<Service | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    eventDate: "",
+    eventLocation: "",
+    message: "",
+  });
+
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
 
   // Fetch service details after session and id are ready
   useEffect(() => {
@@ -90,6 +101,69 @@ export default function ServiceDetailPage() {
   // Check if current user is a vendor and this is their own service
   const isVendorOwnService =
     session?.user.role === "vendor" && service.vendorId === session?.user.id;
+
+  // Handle booking submission
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsBooking(true);
+    setBookingError(null);
+    setBookingSuccess(null);
+
+    try {
+      const formData = new FormData(e.currentTarget as HTMLFormElement);
+
+      const eventDate = formData.get("eventDate") as string;
+      const eventLocation = formData.get("eventLocation") as string;
+      const message = formData.get("message") as string;
+
+      // Validate required fields
+      if (!eventDate.trim()) {
+        throw new Error("Event date is required");
+      }
+
+      // Submit booking to API - userId comes from session, not form
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        body: JSON.stringify({
+          eventDate: eventDate.trim(),
+          eventLocation: eventLocation.trim(),
+          message: message.trim(),
+          serviceId: service!.id,
+          userId: session!.user.id, // TRUSTED: from authenticated session only
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (result.error === "You have already booked this service.") {
+          setBookingError(result.error);
+          setIsBooking(false);
+          // Show "already booked" feedback - don't reset, keep user informed
+          return;
+        }
+        throw new Error(result.error || "Failed to create booking");
+      }
+
+      setBookingSuccess("Booking submitted successfully! The vendor will review your request.");
+      setFormData({
+        eventDate: "",
+        eventLocation: "",
+        message: "",
+      });
+
+      // Reset success after 5 seconds
+      const timer = setTimeout(() => setBookingSuccess(null), 5000);
+      return () => clearTimeout(timer);
+    } catch (err: any) {
+      setBookingError(err.message || "Failed to create booking");
+    } finally {
+      setIsBooking(false);
+    }
+  }, [service, session]);
 
   return (
     <div className="py-24 sm:py-32 bg-white">
@@ -157,24 +231,83 @@ export default function ServiceDetailPage() {
               </p>
             ) : (
               <div className="mt-6">
-                <button
-                  onClick={() => setIsBooking(true)}
-                  className="w-full inline-flex items-center justify-center rounded-full bg-[#D81B7E]/20 px-5 py-3 text-sm font-medium text-[#D81B7E] hover:bg-[#D81B7E]/30 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]"
-                >
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-5 mr-2"
+                {/* Show "Already Booked" feedback if applicable */}
+                {bookingError && (
+                  <div className="mb-3 p-3 rounded-xl bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm">
+                    <p>{bookingError}</p>
+                  </div>
+                )}
+
+                {/* Booking Form */}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-[#190C24] mb-2">
+                      Event Date
+                    </label>
+                    <input
+                      type="date"
+                      name="eventDate"
+                      value={formData.eventDate}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          eventDate: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-black/10 placeholder-[#190C24]/60 focus:outline-none focus:ring-2 focus:ring-[#D81B7E]"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-[#190C24] mb-2">
+                      Event Location
+                    </label>
+                    <input
+                      type="text"
+                      name="eventLocation"
+                      value={formData.eventLocation}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          eventLocation: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-black/10 placeholder-[#190C24]/60 focus:outline-none focus:ring-2 focus:ring-[#D81B7E]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-[#190C24] mb-2">
+                      Additional Message
+                    </label>
+                    <textarea
+                      name="message"
+                      rows={3}
+                      value={formData.message}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          message: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-black/10 placeholder-[#190C24]/60 focus:outline-none focus:ring-2 focus:ring-[#D81B7E]"
+                      placeholder="e.g., Looking for weekend availability, specific requirements..."
+                    ></textarea>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isBooking}
+                    className="w-full px-6 py-3 rounded-xl bg-[#D81B7E]/20 text-sm font-medium text-[#D81B7E] hover:bg-[#D81B7E]/30 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D81B7E]"
                   >
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                  Book this service
-                </button>
+                    {isBooking ? (
+                      "Submitting..."
+                    ) : (
+                      "Book this service"
+                    )}
+                  </button>
+                </form>
               </div>
             )}
           </>

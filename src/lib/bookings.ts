@@ -173,3 +173,62 @@ export async function getUserBookings(userId: string): Promise<Booking[]> {
     respondedAt: b.respondedAt,
   }));
 }
+
+/** Create a new booking with validation and duplicate check */
+export async function createBooking(
+  booking: {
+    userId: string;
+    serviceId: string;
+    eventDate: string;
+    eventLocation?: string;
+    message?: string;
+    serviceTitle?: string;
+    vendorId?: string;
+    vendorName?: string;
+  },
+  sessionUserId: string
+): Promise<{ success: boolean; booking?: Booking; error?: string; alreadyBooked?: boolean }> {
+  // Prevent duplicate booking: check if user already booked this service
+  const existingBookings = await getUserBookings(sessionUserId);
+  const alreadyBooked = existingBookings.some(
+    (b) => b.serviceId === booking.serviceId
+  );
+
+  if (alreadyBooked) {
+    return { success: false, error: "You have already booked this service.", alreadyBooked: true };
+  }
+
+  const mongo = ensureClient();
+  await mongo.connect();
+  const db = mongo.db("mywedding");
+  const collection = db.collection("bookings");
+
+  const newBooking: Booking = {
+    id: crypto.randomUUID(),
+    userId: sessionUserId,
+    serviceId: booking.serviceId,
+    serviceTitle: booking.serviceTitle || "",
+    vendorId: booking.vendorId,
+    vendorName: booking.vendorName,
+    status: "pending",
+    createdAt: new Date(),
+    respondedAt: undefined,
+  };
+
+  await collection.insertOne(newBooking);
+
+  return {
+    success: true,
+    booking: {
+      id: newBooking.id,
+      userId: sessionUserId,
+      serviceId: booking.serviceId,
+      serviceTitle: booking.serviceTitle || "",
+      vendorId: booking.vendorId,
+      vendorName: booking.vendorName,
+      status: "pending",
+      createdAt: new Date(),
+      respondedAt: undefined,
+    } as Booking,
+  };
+}
