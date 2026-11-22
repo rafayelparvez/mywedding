@@ -14,18 +14,22 @@ Wedding planning marketplace: Next.js 16 App Router, React 19, Tailwind v4, bett
 
 ## Commands
 
-- `npm run dev` / `npm run build` / `npm run start`
-- `npm run lint` — bare `eslint` (flat config: `eslint.config.mjs`); `next lint` was removed in Next 16.
-- No test runner and no `typecheck` script: run `npx tsc --noEmit`.
-- No CI or pre-commit hooks. Before finishing: `npx tsc --noEmit`, `npm run lint`, and `npm run build` when routes/server code changed.
+- `npm run dev` — starts Turbopack dev server at http://localhost:3000
+- `npm run build` — produces production build (`.next/`)
+- `npm run start` — serves production build
+- `npm run lint` — bare `eslint` via flat config (`eslint.config.mjs`); note: `next lint` was removed in Next 16
+- No dedicated test runner or `typecheck` script: run `npx tsc --noEmit` to type-check
+- Before finishing any routes/server code: run `npx tsc --noEmit && npm run lint && npm run build`
 
 ## Framework (Next.js 16)
 
-- Read `node_modules/next/dist/docs/` before using Next.js APIs; this major differs from most training data (upgrade notes: `01-app/02-guides/upgrading/version-16.md`).
+- Read `node_modules/next/dist/docs/` before using Next.js APIs; this major differs from most training data.
 - Request APIs are async: `params`/`searchParams` are `Promise`s and must be awaited.
 - `middleware.ts` is deprecated in favor of `proxy.ts` (exported function `proxy`).
-- Turbopack is the default. Tailwind is wired through `turbopack.rules` in `next.config.ts`, not PostCSS.
-- Never edit inside `<!-- BEGIN:nextjs-* -->` blocks in this file — `next dev` rewrites them.
+- Turbopack is the default; Tailwind is wired through `turbopack.rules` in `next.config.ts`, not PostCSS.
+- Never edit inside `<!-- BEGIN:nextjs-* -->` blocks in `next.config.ts` — `next dev` rewrites them.
+
+**Compiler note**: `tsc --noEmit` is the typecheck entrypoint; there is no `next typecheck`.
 
 ## Setup
 
