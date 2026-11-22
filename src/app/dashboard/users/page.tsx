@@ -1,6 +1,5 @@
 "use client";
 
-import Footer from "@/components/Footer";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -12,15 +11,6 @@ interface User {
   role: "user" | "vendor" | "admin";
   image?: string | null;
   createdAt: Date;
-}
-
-interface UsersTableRow {
-  key: string;
-  name: string;
-  email: string;
-  role: string;
-  roleColor: string;
-  createdAt: string;
 }
 
 export default function UsersPage() {
@@ -174,13 +164,13 @@ export default function UsersPage() {
                     </td>
                     <td className="p-3">
                       <span
-                        className={`inline-flex items-center gap-2 px-2.5 py-0.5 rounded text-xs font-medium ${
+                        className={
                           user.role === "admin"
-                            ? "bg-[#FA4796]/10 text-[#FA4796]"
+                            ? "inline-flex items-center gap-2 px-2.5 py-0.5 rounded text-xs font-medium bg-[#FA4796]/10 text-[#FA4796]"
                             : user.role === "vendor"
-                              ? "bg-[#FA4796]/10 text-[#FA4796]"
-                              : "bg-[#10B981]/10 text-[#10B981]"
-                        }`}
+                              ? "inline-flex items-center gap-2 px-2.5 py-0.5 rounded text-xs font-medium bg-[#FA4796]/10 text-[#FA4796]"
+                              : "inline-flex items-center gap-2 px-2.5 py-0.5 rounded text-xs font-medium bg-[#10B981]/10 text-[#10B981]"
+                        }
                       >
                         {user.role === "admin"
                           ? "Admin"

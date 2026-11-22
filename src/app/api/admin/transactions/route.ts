@@ -13,24 +13,6 @@ function ensureClient(): MongoClient {
   return client;
 }
 
-interface Booking {
-  id: string;
-  userId: string;
-  serviceId: string;
-  serviceTitle: string;
-  vendorId?: string;
-  vendorName?: string;
-  status: "pending" | "accepted" | "rejected";
-  createdAt: Date;
-  respondedAt?: Date;
-}
-
-interface User {
-  id: string;
-  name: string | null;
-  email: string | null;
-}
-
 interface Transaction {
   id: string;
   userId: string;
@@ -53,7 +35,7 @@ export async function GET() {
 
     // Fetch all bookings/transactions
     const bookingsCollection = db.collection("bookings");
-    const bookings = await bookings
+    const allBookings = await bookingsCollection
       .find({})
       .sort({ createdAt: -1 })
       .toArray();
@@ -66,7 +48,7 @@ export async function GET() {
       userMap.set(u._id.toString(), u.email ?? "unknown@email.com");
     });
 
-    const formattedTransactions: Transaction[] = bookings.map((b) => ({
+    const formattedTransactions: Transaction[] = allBookings.map((b) => ({
       id: b.id,
       userId: b.userId,
       serviceId: b.serviceId,

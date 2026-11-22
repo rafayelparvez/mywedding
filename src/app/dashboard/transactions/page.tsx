@@ -1,6 +1,5 @@
 "use client";
 
-import Footer from "@/components/Footer";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -16,21 +15,11 @@ interface Transaction {
   amount?: string;
   createdAt: Date;
   respondedAt?: Date;
-}
-
-interface TransactionsTableRow {
-  key: string;
-  userEmail: string;
-  serviceTitle: string;
-  vendorName?: string;
-  amount?: string;
-  status: string;
-  createdAt: string;
-  respondedAt?: string;
+  userEmail?: string;
 }
 
 export default function TransactionsPage() {
-  const [transactions, setTransactions] = useState<TransactionsTableRow[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -114,7 +103,7 @@ export default function TransactionsPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <h2 className="text-2xl font-semibold text-[#190C24]">
             Transactions
@@ -160,10 +149,14 @@ export default function TransactionsPage() {
                     className="border-b border-black/10 hover:bg-[#F9FAFB]"
                   >
                     <td className="p-3">
-                      <span className="text-sm text-[#190C24]">{transaction.userEmail || "Unknown"}</span>
+                      <span className="text-sm text-[#190C24]">
+                        {transaction.userEmail || "Unknown"}
+                      </span>
                     </td>
                     <td className="p-3">
-                      <span className="font-medium text-[#190C24]">{transaction.serviceTitle}</span>
+                      <span className="font-medium text-[#190C24]">
+                        {transaction.serviceTitle}
+                      </span>
                     </td>
                     <td className="p-3">
                       {transaction.vendorName ? (
@@ -173,17 +166,19 @@ export default function TransactionsPage() {
                       )}
                     </td>
                     <td className="p-3">
-                      <span className="text-[#190C24]">{transaction.amount || "N/A"}</span>
+                      <span className="text-[#190C24]">
+                        {transaction.amount || "N/A"}
+                      </span>
                     </td>
                     <td className="p-3">
                       <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
+                        className={
                           transaction.status === "accepted"
-                            ? "bg-[#10B981]/10 text-[#10B981]"
+                            ? "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-[#10B981]/10 text-[#10B981]"
                             : transaction.status === "rejected"
-                              ? "bg-[#F87171]/10 text-[#F87171]"
-                              : "bg-[#FA4796]/10 text-[#FA4796]"
-                        }`}
+                              ? "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-[#F87171]/10 text-[#F87171]"
+                              : "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-[#FA4796]/10 text-[#FA4796]"
+                        }
                       >
                         {transaction.status === "accepted"
                           ? "Accepted"
@@ -208,7 +203,7 @@ export default function TransactionsPage() {
             </table>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

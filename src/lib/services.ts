@@ -39,6 +39,48 @@ export const SERVICE_CATEGORIES = {
   officiant: "Officiant",
 } as const;
 
+/** Get the vendor's subscription plan from their user document */
+async function getVendorPlan(vendorId: string): Promise<"free" | "premium"> {
+  const mongo = ensureClient();
+  await mongo.connect();
+  const db = mongo.db("mywedding");
+  const usersCollection = db.collection("users");
+  const user = await usersCollection.findOne({ vendorId });
+  // Check additional fields for subscription plan
+  if (user?.additionalFields?.subscriptionPlan) {
+    return user.additionalFields.subscriptionPlan as "free" | "premium";
+  }
+  // Default to free for vendors
+  return "free";
+}
+
+/** Count active (approved + active) services for a vendor */
+async function countVendorActiveServices(vendorId: string): Promise<number> {
+  const mongo = ensureClient();
+  await mongo.connect();
+  const db = mongo.db("mywedding");
+  const collection = db.collection("services");
+  const count = await collection.countDocuments({ vendorId, active: true, approved: true });
+  return count;
+}
+
+/** Check if vendor can publish another service based on their plan */
+async function canVendorPublishService(vendorId: string): Promise<{ allowed: boolean; reason?: string }> {
+  const plan = await getVendorPlan(vendorId);
+  const activeCount = await countVendorActiveServices(vendorId);
+
+  if (plan === "premium") {
+    return { allowed: true };
+  }
+
+  // Free vendors: max 3 active services
+  if (activeCount >= 3) {
+    return { allowed: false, reason: "Free vendors can have a maximum of 3 active services. Upgrade to premium for unlimited." };
+  }
+
+  return { allowed: true };
+}
+
 /** Initialize MongoDB connection and seed services if needed */
 export async function initializeServices() {
   const mongo = ensureClient();
@@ -177,4 +219,46 @@ export async function getServices(limit = 6) {
     vendorId: s.vendorId,
     vendorName: s.vendorName,
   }));
+}
+
+/** Create a new service with subscription limit enforcement and pending approval */
+export async function createService(
+  service: {
+    title: string;
+    category: string;
+    description: string;
+    price: string;
+    image: string;
+    vendorId: string;
+    vendorName: string;
+  },
+  vendorId: string
+): Promise<{ success: boolean; service?: Service; error?: string }> {
+  // Check subscription limits
+  const canPublish = await canVendorPublishService(vendorId);
+  if (!canPublish.allowed) {
+    return { success: false, error: canPublish.reason! };
+  }
+
+  const mongo = ensureClient();
+  await mongo.connect();
+  const db = mongo.db("mywedding");
+  const collection = db.collection("services");
+
+  const newService: Service = {
+    id: crypto.randomUUID(),
+    title: service.title,
+    description: service.description,
+    category: service.category,
+    price: service.price,
+    image: service.image,
+    approved: false, // New services start as Pending approval
+    active: false, // Inactive until approved
+    createdAt: new Date(),
+    vendorId,
+    vendorName,
+  };
+
+  await collection.insertOne(newService);
+  return { success: true, service: newService };
 }

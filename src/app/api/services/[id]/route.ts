@@ -3,8 +3,8 @@ import { getServices } from "@/lib/services";
 export async function GET(request: Request) {
   try {
     // Parse the { id } from the URL path
-    const { searchParams, pathname } = new URL(request.url);
-    const id = pathname.split("/").pop(); // gets the id from /api/services/[id]
+    const pathname = new URL(request.url);
+    const id = pathname.pathname.split("/").pop(); // gets the id from /api/services/[id]
 
     if (!id) {
       return new Response(JSON.stringify({ error: "Service ID required" }), {
