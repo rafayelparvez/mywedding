@@ -1,7 +1,10 @@
-import { getServices } from "@/lib/services";
+import { initializeServices, getServices, type Service } from "@/lib/services";
 
 export async function GET(request: Request) {
   try {
+    // Ensure services are initialized and seeded into DB
+    await initializeServices();
+
     const { searchParams } = new URL(request.url);
 
     // Limit and sort are applied server-side
@@ -11,7 +14,7 @@ export async function GET(request: Request) {
     const services = await getServices(limit);
 
     // Apply sorting server-side
-    services.sort((a, b) => {
+    services.sort((a: Service, b: Service) => {
       switch (sortBy) {
         case "price-low": {
           const priceA = parseInt(a.price.replace(/[^\d]/g, "") || "0");
@@ -33,7 +36,8 @@ export async function GET(request: Request) {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch {
+  } catch (err) {
+    console.error("API services error:", err);
     return new Response(JSON.stringify({ error: "Failed to fetch services" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
